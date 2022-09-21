@@ -1,0 +1,200 @@
+openapi: 3.0.1
+info:
+  title: API для выгрузки переписки пользователя
+  version: 1.0.0
+servers:
+  - url: http://127.0.0.1:5000
+tags:
+  - name: export
+    description: Экспорт данных
+  - name: info
+    description: Вспомогательные информационные запросы
+paths:
+  /export:
+    post:
+      operationId: exportUserChats
+      tags:
+        - export
+      summary: Export user chats to csv files
+      description: |
+        Каждый файл в результатах выгрузки содержит сообщения, отсортированные по дате
+        
+        Описание колонок:
+        
+         - `createdAt` - дата и время отправки сообщения в формате unix timestamp
+         - `createdBy` - id автора сообщения
+         - `message` - текст сообщения
+         - `location` - для сообщения типа "геопозиция"
+         - `file` - для сообщения типа "файл"
+         - `messageType - тип сообщения (TODO: описать)
+         - `senderType` - тип отправки сообщения
+        
+        Расшифровка возможных значений `messageType`:
+        
+         - 1 - текстовое
+         - 2 - файл
+         - 3 - геопозиция
+         - 4 - контакт в формате VCARD
+         - 5 - стикер
+         - 6 - служебное сообщение
+        
+        Расшифровка возможных значений `senderType`:
+         - 1 - отправленное сообщение
+         - 2 - пересланное сообщение
+         - 3 - ответ на сообщение
+         - 4 - пересланное в избранное
+
+      requestBody:
+        description: Параметры запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExportUserChatsRequest'
+      responses:
+        '201':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessage'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleMessage'
+
+  /info/company:
+    get:
+      operationId: allCompaniesList
+      description: Маршрут-заглушка для проверки здоровья API
+      tags:
+        - info
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompaniesPagingResponse'
+
+
+  /info/company/{companyId}/users:
+    get:
+      operationId: allCompaniesUsers
+      parameters:
+        - $ref: '#/components/parameters/companyId'
+      tags:
+        - info
+      responses:
+        '200':
+          description: Статья
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsersPagingResponse'
+
+
+components:
+
+  parameters:
+    companyId:
+      description: Id компании
+      name: companyId
+      required: true
+      in: path
+      schema:
+        type: string
+
+  schemas:
+    ExportUserChatsRequest:
+      description:  Модель запроса на выгрузку переписки пользователя
+      type: object
+      properties:
+        companyEntryName:
+          description: Кодовое название компании
+          type: string
+          pattern: '^[A-Za-z][A-Za-z0-9_-]*$'
+        userLogin:
+          description: Логин пользователя
+          type: string
+
+
+    PagingResponse:
+      description: Ответ в формате постраничной навигации результатов
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Номер страницы
+        perPage:
+          type: integer
+          description: Результатов на странице
+        total:
+          type: integer
+          description: Всего результатов
+        data:
+          type: array
+          description: Массив с результатами запроса
+          items:
+            type: object
+
+    CompanyShort:
+      description: Краткая информация о компании
+      type: object
+      properties:
+        id:
+          description: Id компании
+          type: string
+        name:
+          description: Человекочитаемое название компании
+          type: string
+        entryName:
+          description: Кодовое название компании
+          type: string
+          pattern: '^[A-Za-z][A-Za-z0-9_-]*$'
+
+    UserShort:
+      description: Краткая информация о пользователе
+      type: object
+      properties:
+        id:
+          description: Id пользователя
+          type: string
+        email:
+          description: Email пользователя
+          type: string
+          format: email
+        fullName:
+          description: ФИО
+          type: string
+
+    CompaniesPagingResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagingResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              description: Массив с результатами запроса
+              items:
+                $ref: '#/components/schemas/CompanyShort'
+
+    UsersPagingResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagingResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              description: Массив с результатами запроса
+              items:
+                $ref: '#/components/schemas/UserShort'
+
+    SimpleMessage:
+      description: Текстовое сообщение
+      type: object
+      properties:
+        message:
+          description: Сообщение
+          type: string

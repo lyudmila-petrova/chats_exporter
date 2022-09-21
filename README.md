@@ -51,8 +51,4 @@ $ npm start
 $ npm run start:dev
 ```
 
-
-
-## Спецификация
-
-[TODO]
+## [Спецификация](openapi.yaml)
