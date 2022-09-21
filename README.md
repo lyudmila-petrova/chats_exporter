@@ -51,4 +51,4 @@ $ npm start
 $ npm run start:dev
 ```
 
-## [Спецификация](openapi.yaml)
+## [Спецификация](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/lyudmila-petrova/chats_exporter/master/openapi.yaml)
