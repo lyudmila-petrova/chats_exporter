@@ -1,7 +1,12 @@
 .idea
 
 /node_modules/
-/docker/
+
+
+/docker/mongo/db
+/docker/mongo/backup/*
+!/docker/mongo/backup/.gitkeep
+
 .env
 
 /export/
